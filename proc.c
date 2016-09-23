@@ -49,6 +49,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->priority = 0; // Default priority
 
   release(&ptable.lock);
 
@@ -91,7 +92,6 @@ userinit(void)
     panic("userinit: out of memory?");
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = PGSIZE;
-  p->priority = 0; // Default priority
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
@@ -290,21 +290,24 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
-    // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
-
-    // // calculate the max_priority by looping over all the processes
+    // calculate the max_priority by looping over all the processes
     max_priority = -1;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state == RUNNABLE && p->priority > max_priority)
         max_priority = p->priority;
     }
 
-    if(max_priority == -1)
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+
+    if(max_priority == -1){
+      release(&ptable.lock);
       continue;
+    }
+
 
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE || p->priority != max_priority)
+      if(p->state != RUNNABLE || p->priority < max_priority)
         continue;
 
       // Switch to chosen process.  It is the process's job
