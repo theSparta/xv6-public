@@ -91,6 +91,7 @@ userinit(void)
     panic("userinit: out of memory?");
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = PGSIZE;
+  p->priority = 0; // Default priority
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
@@ -158,6 +159,9 @@ fork(void)
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
+
+  // Set child's priority equal to that of parent
+  np->priority = proc->priority;
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -280,6 +284,7 @@ void
 scheduler(void)
 {
   struct proc *p;
+  int max_priority;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -287,8 +292,19 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+
+    // // calculate the max_priority by looping over all the processes
+    max_priority = -1;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+      if(p->state == RUNNABLE && p->priority > max_priority)
+        max_priority = p->priority;
+    }
+
+    if(max_priority == -1)
+      continue;
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE || p->priority != max_priority)
         continue;
 
       // Switch to chosen process.  It is the process's job
