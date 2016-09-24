@@ -185,7 +185,8 @@ clean:
 	*.o *.d *.asm *.sym vectors.S bootblock entryother \
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
 	.gdbinit \
-	$(UPROGS)
+	$(UPROGS) \
+	rm -rf files
 
 # make a printout
 FILES = $(shell grep -v '^\#' runoff.list)
