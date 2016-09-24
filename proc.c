@@ -49,7 +49,9 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->priority = 0; // Default priority
+  p->priority = 1; // Default priority
+  p->realtime = 0;
+  // p->num_rounds = 0;
 
   release(&ptable.lock);
 
@@ -162,6 +164,7 @@ fork(void)
 
   // Set child's priority equal to that of parent
   np->priority = proc->priority;
+  np->realtime = proc->realtime;
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -247,6 +250,7 @@ wait(void)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
+        // cprintf("Process with pid %d ran for %d\n",p->pid,p->num_rounds);//
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
@@ -284,30 +288,35 @@ void
 scheduler(void)
 {
   struct proc *p;
-  int max_priority;
+  float min_time; // Stores the minimum realtime of a process
 
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
-    // calculate the max_priority by looping over all the processes
-    max_priority = -1;
+    // calculate the min_time by looping over all the processes
+    min_time = -1 ;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state == RUNNABLE && p->priority > max_priority)
-        max_priority = p->priority;
+      if(p->state == RUNNABLE){
+        if(min_time > 0)
+          min_time = (min_time > p->realtime) ? p->realtime : min_time;
+        else
+          min_time = p->realtime;
+      }
     }
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
 
-    if(max_priority == -1){
+    // No process found
+    if(min_time < 0){
       release(&ptable.lock);
       continue;
     }
 
-
+    // run the process with the real_time equal to min_time
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE || p->priority < max_priority)
+      if(p->state != RUNNABLE || p->realtime > min_time)
         continue;
 
       // Switch to chosen process.  It is the process's job
@@ -358,6 +367,7 @@ void
 yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
+  proc->realtime += 1.0/(proc->priority);
   proc->state = RUNNABLE;
   sched();
   release(&ptable.lock);
@@ -501,4 +511,12 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+void setpriority(int i)
+{
+  acquire(&ptable.lock);  //DOC: yieldlock
+  proc->priority = i;
+  proc->realtime += 1.0/(proc->priority);
+  release(&ptable.lock);
 }

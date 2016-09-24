@@ -90,14 +90,17 @@ sys_uptime(void)
   return xticks;
 }
 
+// to set the priority of a process
 int sys_setprio(void)
 {
   int i;
-  argint(0,&i);
-  proc->priority = i;
-  return i;
+  if(argint(0,&i) < 0 || i <= 0)
+    return -1;
+  setpriority(i);
+  return 0;
 }
 
+// to get the priority of a process
 int sys_getprio(void)
 {
   return proc->priority;
