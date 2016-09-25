@@ -101,7 +101,7 @@ void
 io_intensive(void)
 {
   int i;
-  uint start = uptime(); 
+  uint start = uptime();
   printf(stdout, "Process with pid %d and priority %d started\n",getpid(),getprio());
   for(i=0 ; i<100; i++) {
     sleep(1);
@@ -111,10 +111,10 @@ io_intensive(void)
 }
 
 void cpu_intensive(int x)
-{ 
+{
   volatile uint i;
   uint j;
-  uint start = uptime(); 
+  uint start = uptime();
   printf(stdout, "Process with pid %d and priority %d started\n",getpid(),getprio());
   for(j=0;j<x;j++)
     for(i=1;i < N; i++);
