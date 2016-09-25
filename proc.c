@@ -294,6 +294,8 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
+    acquire(&ptable.lock);
+
     // calculate the min_time by looping over all the processes
     min_time = -1 ;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -305,16 +307,13 @@ scheduler(void)
       }
     }
 
-    // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
-
     // No process found
     if(min_time < 0){
       release(&ptable.lock);
       continue;
     }
 
-    // run the process with the real_time equal to min_time
+    // Loop over process table looking for process to run with the real_time equal to min_time
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE || p->realtime > min_time)
         continue;
@@ -331,9 +330,9 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       proc = 0;
+      break;
     }
     release(&ptable.lock);
-
   }
 }
 

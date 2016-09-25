@@ -80,7 +80,7 @@ void test3(int n)
       }
       else{
         setprio1(1);
-        cpu_intensive(167);
+        cpu_intensive(100);
       }
       exit();
     }
