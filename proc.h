@@ -64,8 +64,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   uint priority;                // User Specified priority of the Process
-  float realtime;           // No of clock cycles for which the process has run * 1/Priority
-  // int num_rounds;
+  float realtime;               // No of clock cycles for which the process has run * 1/Priority
 };
 
 // Process memory is laid out contiguously, low addresses first:

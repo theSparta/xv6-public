@@ -51,7 +51,6 @@ found:
   p->pid = nextpid++;
   p->priority = 1; // Default priority
   p->realtime = 0;
-  // p->num_rounds = 0;
 
   release(&ptable.lock);
 
@@ -250,7 +249,6 @@ wait(void)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
-        // cprintf("Process with pid %d ran for %d\n",p->pid,p->num_rounds);//
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
