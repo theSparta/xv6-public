@@ -186,7 +186,6 @@ clean:
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
 	.gdbinit \
 	$(UPROGS) \
-	rm -rf files
 
 # make a printout
 FILES = $(shell grep -v '^\#' runoff.list)
