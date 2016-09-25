@@ -44,6 +44,7 @@ cpu_test(int A[], const int len,int x)
   }
   printf(stdout, "--------------------------------------------------------\n");
 }
+
 void test1()
 {
     printf(stdout, "1st scheduler test started\n");
@@ -105,7 +106,7 @@ io_intensive(void)
   for(i=0 ; i<100; i++) {
     sleep(1);
   }
-  printf(stdout, "Process with pid %d completed in %d cycles\n",getpid(),uptime()-start);
+  printf(stdout, "Process with pid %d completed in %d ticks\n",getpid(),uptime()-start);
   return;
 }
 
@@ -117,7 +118,7 @@ void cpu_intensive(int x)
   printf(stdout, "Process with pid %d and priority %d started\n",getpid(),getprio());
   for(j=0;j<x;j++)
     for(i=1;i < N; i++);
-  printf(stdout, "Process with pid %d completed in %d cycles\n",getpid(),uptime()-start);
+  printf(stdout, "Process with pid %d completed in %d ticks\n",getpid(),uptime()-start);
   return;
 }
 
@@ -126,6 +127,6 @@ main(int argc, char *argv[])
 {
   test1();
   test2();
-  test3(10);
+  test3(5);
   exit();
 }
